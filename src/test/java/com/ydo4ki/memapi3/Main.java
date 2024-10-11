@@ -11,10 +11,13 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 5)
 @Measurement(iterations = 5)
 public class Main {
+
+
 	public static void main(String[] args) throws Throwable {
-		long mem = Mem.memoryAccessor().allocateMemory(0x1000, 0x1000);
+		System.out.println(Mem.memoryAccessor());
+		long mem = Mem.memoryAccessor().allocateMemory(0x10, 0x10);
 		System.out.println(mem);
-		Mem.printMemory(System.out, mem, 0x100, true);
+		Mem.printMemory(System.out, mem, 0x10, true);
 	}
 
 	private static final MemAccessor accessor = Mem.memoryAccessor();
@@ -24,12 +27,12 @@ public class Main {
 
 
 	// foreign: 0,874 ± 0,437  ns/op
-	// unsafe:
+	// unsafe:  0,353 ± 0,099  ns/op ????? (something wrong with it)
 	// jni:
 	@Benchmark
 	public void measureAccessorGetLong(Blackhole bh) {
 		try {
-			accessor.getLong(memory);
+			bh.consume(accessor.getLong(memory));
 		} catch (Unchecked e) {
 			throw e.noreturn();
 		}

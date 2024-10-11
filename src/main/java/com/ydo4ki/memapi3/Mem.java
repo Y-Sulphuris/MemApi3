@@ -13,13 +13,15 @@ public class Mem {
 	private static MemAccessor getAccessor() {
 		try {
 			return new AccessorForeign();
-		} catch (ExceptionInInitializerError e) {
+		} catch (Throwable e) {
+			//System.out.println("Cannot use foreign:");
 			try {
-				//return new AccessorUnsafe();
+				return new AccessorUnsafe();
 			} catch (Throwable ee) {
 				//return new AccessorJniDirect();
+				ee.addSuppressed(e);
+				throw ee;
 			}
-			throw e;
 		}
 	}
 

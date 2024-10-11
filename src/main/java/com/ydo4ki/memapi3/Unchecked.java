@@ -1,7 +1,5 @@
 package com.ydo4ki.memapi3;
 
-import java.util.function.Supplier;
-
 /**
  * Checked exception to explicitly indicate that called operation is unsafe<br>
  * Creation of real objects of this class is forbidden<br>
@@ -27,6 +25,11 @@ public abstract class Unchecked extends Throwable {
 		} catch (Unchecked e) {
 			throw e.noreturn();
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	static <T extends Throwable> Error pass(Throwable e) throws T{
+		throw (T)e;
 	}
 
 	@FunctionalInterface

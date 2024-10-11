@@ -99,7 +99,22 @@ public interface MemAccessor extends MemAllocatorManual {
 
 	long moveMemory(long _Dst, long _Src, long _Bytes) throws Unchecked;
 
-	int compareMemory(long _Buf1, long _Buf2, long _Size) throws Unchecked;
+	default int compareMemory(long _Buf1, long _Buf2, long _Size) throws Unchecked {
+		for(long i = 0L; i < _Size; ++_Buf2) {
+			if (this.getByte(_Buf1) < this.getByte(_Buf2)) {
+				return -1;
+			}
+
+			if (this.getByte(_Buf1) > this.getByte(_Buf2)) {
+				return 1;
+			}
+
+			++i;
+			++_Buf1;
+		}
+
+		return 0;
+	}
 
 	void setMemory(long _Dst, byte _Val, long _Size) throws Unchecked;
 }
