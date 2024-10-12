@@ -3,6 +3,7 @@ package com.ydo4ki.memapi3;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -18,8 +19,14 @@ public class Main {
 
 	public static void main(String[] args) throws Throwable {
 		MemAccessor accessor = Mem.memoryAccessor();
-		long mem = accessor.allocateMemory(0x10, 0x10);
+		long mem = accessor.allocateMemory(0x20, 0x10);
+
+		accessor.putBytes(mem+4, 'h', 'e', 5, 'l');
+		accessor.copyMemory(mem, mem+4, 8);
 		System.out.println(mem);
+		byte[] bytes = new byte[0x10];
+		accessor.getBytes(mem, bytes);
+		System.out.println(Arrays.toString(bytes));
 		Mem.printMemory(System.out, mem, 0x10, true);
 		System.out.println(accessor.getLong(mem));
 		System.out.println(accessor.getLong(mem+1));

@@ -15,7 +15,8 @@ public class Mem {
 			return new AccessorForeign();
 		} catch (Throwable e) {
 			try {
-				return new AccessorUnsafe();
+				throw e;
+				//return new AccessorUnsafe();
 			} catch (Throwable ee) {
 				return new AccessorJniDirect();
 			}

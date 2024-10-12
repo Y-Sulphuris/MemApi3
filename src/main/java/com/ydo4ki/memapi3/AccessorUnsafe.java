@@ -1,5 +1,5 @@
 package com.ydo4ki.memapi3;
-
+/*
 import sun.misc.Unsafe;
 
 import java.lang.invoke.MethodHandle;
@@ -11,7 +11,7 @@ import java.lang.reflect.Modifier;
 /**
  * @author Sulphuris
  * @since 11.10.2024 12:50
- */
+ *
 final class AccessorUnsafe implements MemAccessor {
 	private static final Unsafe unsafe = getUnsafe();
 
@@ -287,7 +287,7 @@ final class AccessorUnsafe implements MemAccessor {
 
 	@Override
 	public long moveMemory(long _Dst, long _Src, long _Bytes) throws Unchecked {
-		return copyMemory(_Dst, _Src, _Bytes);
+		return fallback.moveMemory(_Dst, _Src, _Bytes);
 	}
 
 	@Override
@@ -318,3 +318,4 @@ final class AccessorUnsafe implements MemAccessor {
 		return fallback.allocateMemory(_Size, _Alignment);
 	}
 }
+*/
