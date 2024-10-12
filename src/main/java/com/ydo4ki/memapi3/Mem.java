@@ -29,6 +29,8 @@ public class Mem {
 		return accessor;
 	}
 
+	public static final int ADDRESS_SIZE = memoryAccessor().addressSize();
+
 
 	public static void printMemory(PrintStream out, long mem, long size) {
 		printMemory(out, mem, size, 4, 4);

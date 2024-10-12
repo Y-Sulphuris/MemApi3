@@ -117,4 +117,6 @@ public interface MemAccessor extends MemAllocatorManual {
 	}
 
 	void setMemory(long _Dst, byte _Val, long _Size) throws Unchecked;
+
+	int addressSize();
 }

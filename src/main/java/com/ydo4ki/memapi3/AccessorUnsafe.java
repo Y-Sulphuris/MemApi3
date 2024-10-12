@@ -54,6 +54,8 @@ final class AccessorUnsafe implements MemAccessor {
 	private static final MethodHandle copyMemory = findSunUnsafeMethod("copyMemory", void.class, long.class, long.class, long.class);
 	private static final MethodHandle setMemory = findSunUnsafeMethod("setMemory", void.class, long.class, long.class, byte.class);
 
+	private static final MethodHandle addressSize = findSunUnsafeMethod("addressSize", int.class);
+
 	private static MethodHandle findSunUnsafeMethod(String methodName, Class<?> returnType, Class<?>... args) {
 		try {
 			return findMethod(methodName, unsafe, returnType, args);
@@ -292,6 +294,15 @@ final class AccessorUnsafe implements MemAccessor {
 	public void setMemory(long _Dst, byte _Val, long _Size) throws Unchecked {
 		try {
 			setMemory.invokeExact(_Dst, _Size, _Val);
+		} catch (Throwable e) {
+			throw Unchecked.pass(e);
+		}
+	}
+
+	@Override
+	public int addressSize() {
+		try {
+			return (int) addressSize.invokeExact();
 		} catch (Throwable e) {
 			throw Unchecked.pass(e);
 		}
