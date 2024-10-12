@@ -16,7 +16,8 @@ public class Mem {
 		} catch (Throwable e) {
 			//System.out.println("Cannot use foreign:");
 			try {
-				return new AccessorUnsafe();
+				return new AccessorJniDirect();
+				//return new AccessorUnsafe();
 			} catch (Throwable ee) {
 				//return new AccessorJniDirect();
 				ee.addSuppressed(e);
@@ -38,10 +39,11 @@ public class Mem {
 
 	public static void printMemory(PrintStream out, long mem, long size, int colSize, int colCount) {
 		for (int i = 0; i < size; i++) {
+			final long addr = i + mem;
 			if (i % (colSize * colCount) == 0)
-				out.print((i == 0 ? "" : "\n") + "[" + String.format("%08x", i + mem) + "] (+" + String.format("%04x", i) + ")\t");
+				out.print((i == 0 ? "" : "\n") + "[" + String.format("%08x", addr) + "] (+" + String.format("%04x", i) + ")\t");
 			try {
-				out.printf("%02x ", accessor.getByte(mem + i));
+				out.printf("%02x ", accessor.getByte(addr));
 			} catch (Unchecked e) {
 				throw e.noreturn();
 			}
@@ -67,18 +69,19 @@ public class Mem {
 		String brFormat = "%0" + (Math.max(String.valueOf(length).length(), String.valueOf(offset).length())) + "x";
 
 		for (int i = offset; i < length; i++) {
+			final long addr = i + mem;
 			if ((i + Math.abs(offset)) % (colSize * colCount) == 0) {
 				out.print((i == offset ? "" : "\n") +
-						"[" + String.format("%08x", i + mem) + "] (" +
+						"[" + String.format("%08x", addr) + "] (" +
 						(i >= 0 ? ("+" + String.format(brFormat, i)) : ("-" + String.format(brFormat, -i))) +
 						")\t");
 			}
 			if (i >= size) {
 				out.print("__ ");
 			} else {
-				byte b = 0;
+				byte b;
 				try {
-					b = accessor.getByte(mem + i);
+					b = accessor.getByte(addr);
 				} catch (Unchecked e) {
 					throw e.noreturn();
 				}

@@ -310,11 +310,11 @@ final class AccessorUnsafe implements MemAccessor {
 
 	@Override
 	public void deallocateMemory(long _Mem) throws Unchecked {
-		throw new UnsupportedOperationException();
+		fallback.deallocateMemory(_Mem);
 	}
 
 	@Override
 	public long allocateMemory(long _Size, long _Alignment) throws Unchecked, IllegalArgumentException {
-		return unsafe.allocateMemory(_Size);
+		return fallback.allocateMemory(_Size, _Alignment);
 	}
 }

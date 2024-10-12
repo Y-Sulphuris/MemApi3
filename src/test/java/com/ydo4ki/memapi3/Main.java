@@ -12,12 +12,18 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 5)
 public class Main {
 
+	static {
+		System.load("G:/Project/JavaProject/MemApi3/jni/cmake-build-debug/libjni.dll");
+	}
 
 	public static void main(String[] args) throws Throwable {
 		System.out.println(Mem.memoryAccessor());
-		long mem = Mem.memoryAccessor().allocateMemory(0x10, 0x10);
+		MemAccessor accessor = Mem.memoryAccessor();
+		long mem = accessor.allocateMemory(0x10, 0x10);
 		System.out.println(mem);
 		Mem.printMemory(System.out, mem, 0x10, true);
+		System.out.println(accessor.getLong(mem));
+		System.out.println(accessor.getLong(mem+1));
 	}
 
 	private static final MemAccessor accessor = Mem.memoryAccessor();
