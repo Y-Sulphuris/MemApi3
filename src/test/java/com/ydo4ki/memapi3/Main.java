@@ -13,11 +13,10 @@ import java.util.concurrent.TimeUnit;
 public class Main {
 
 	static {
-		System.load("G:/Project/JavaProject/MemApi3/jni/cmake-build-debug/libjni.dll");
+		System.out.println(Mem.memoryAccessor());
 	}
 
 	public static void main(String[] args) throws Throwable {
-		System.out.println(Mem.memoryAccessor());
 		MemAccessor accessor = Mem.memoryAccessor();
 		long mem = accessor.allocateMemory(0x10, 0x10);
 		System.out.println(mem);
@@ -34,7 +33,7 @@ public class Main {
 
 	// foreign: 0,874 ± 0,437  ns/op
 	// unsafe:  0,353 ± 0,099  ns/op ????? (something wrong with it)
-	// jni:
+	// jni:     8,995 ± 0,573  ns/op
 	@Benchmark
 	public void measureAccessorGetLong(Blackhole bh) {
 		try {

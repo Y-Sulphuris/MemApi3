@@ -1,5 +1,12 @@
 package com.ydo4ki.memapi3;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+
 /**
  * @author Sulphuris
  * @since 11.10.2024 12:51
@@ -155,4 +162,27 @@ final class AccessorJniDirect implements MemAccessor {
 	}
 
 	private static native long allocateMemory0(long _Size, long _Alignment);
+
+	static {
+		String arch = System.getProperty("os.arch").equals("x86") ? "32" : "64";
+
+		String finalFileName = System.mapLibraryName("libmem3");
+		try {
+			String libPath = "native/" + arch + "/" + finalFileName;
+			InputStream rtSrc = Thread.currentThread().getContextClassLoader().getResourceAsStream(libPath);
+			if (rtSrc == null)
+				throw new IOException("Native library not found: '" + libPath + "'");
+			File dst = Files.createTempFile(finalFileName, arch).toFile();
+			dst.deleteOnExit();
+
+			Files.copy(rtSrc, dst.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			dst.setReadOnly();
+			rtSrc.close();
+
+			System.load(dst.getAbsolutePath());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
 }

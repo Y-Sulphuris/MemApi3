@@ -14,14 +14,10 @@ public class Mem {
 		try {
 			return new AccessorForeign();
 		} catch (Throwable e) {
-			//System.out.println("Cannot use foreign:");
 			try {
-				return new AccessorJniDirect();
-				//return new AccessorUnsafe();
+				return new AccessorUnsafe();
 			} catch (Throwable ee) {
-				//return new AccessorJniDirect();
-				ee.addSuppressed(e);
-				throw ee;
+				return new AccessorJniDirect();
 			}
 		}
 	}
@@ -38,17 +34,16 @@ public class Mem {
 	}
 
 	public static void printMemory(PrintStream out, long mem, long size, int colSize, int colCount) {
-		for (int i = 0; i < size; i++) {
+		for (int i = 0; i < size; i++) try {
 			final long addr = i + mem;
 			if (i % (colSize * colCount) == 0)
 				out.print((i == 0 ? "" : "\n") + "[" + String.format("%08x", addr) + "] (+" + String.format("%04x", i) + ")\t");
-			try {
-				out.printf("%02x ", accessor.getByte(addr));
-			} catch (Unchecked e) {
-				throw e.noreturn();
-			}
+			out.printf("%02x ", accessor.getByte(addr));
 			if (i % colSize == colSize - 1) out.print("  ");
+		} catch (Unchecked e) {
+			throw e.noreturn();
 		}
+
 		out.println();
 	}
 
@@ -78,13 +73,8 @@ public class Mem {
 			}
 			if (i >= size) {
 				out.print("__ ");
-			} else {
-				byte b;
-				try {
-					b = accessor.getByte(addr);
-				} catch (Unchecked e) {
-					throw e.noreturn();
-				}
+			} else try {
+				byte b = accessor.getByte(addr);
 				out.printf("%02x ", b);
 				if (ascii) {
 					char ch = (char) b;
@@ -92,7 +82,10 @@ public class Mem {
 					else if (!Character.isDefined(ch) || b <= 9) ch = '.';
 					asciiBuilder.append(ch);
 				}
+			} catch (Unchecked e) {
+				throw e.noreturn();
 			}
+
 
 			if (unsignedMod(i, colSize) == colSize - 1) out.print("  ");
 
