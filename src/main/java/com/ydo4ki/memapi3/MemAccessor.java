@@ -95,9 +95,9 @@ public interface MemAccessor extends MemAllocatorManual {
 	void putAddressAligned(long _Addr, long _Val) throws Unchecked;
 
 
-	long copyMemory(long _Dst, long _Src, long _Bytes) throws Unchecked;
+	void copyMemory(long _Dst, long _Src, long _Bytes) throws Unchecked;
 
-	long moveMemory(long _Dst, long _Src, long _Bytes) throws Unchecked;
+	void moveMemory(long _Dst, long _Src, long _Bytes) throws Unchecked;
 
 	default int compareMemory(long _Buf1, long _Buf2, long _Size) throws Unchecked {
 		for (long i = 0L; i < _Size; ++_Buf2) {
@@ -260,5 +260,63 @@ public interface MemAccessor extends MemAllocatorManual {
 
 	default void getDoubles(long _Base, double[] value) throws Unchecked {
 		getDoubles(_Base, value, 0, value.length);
+	}
+
+
+	default byte[] getBytes(long _Base, int _Size) throws Unchecked {
+		byte[] ret = new byte[_Size];
+		getBytes(_Base, ret);
+		return ret;
+	}
+
+	default boolean[] getBooleans(long _Base, int _Size) throws Unchecked {
+		boolean[] ret = new boolean[_Size];
+		getBooleans(_Base, ret);
+		return ret;
+	}
+
+	default short[] getShorts(long _Base, int _Size) throws Unchecked {
+		short[] ret = new short[_Size];
+		getShorts(_Base, ret);
+		return ret;
+	}
+
+	default char[] getChars(long _Base, int _Size) throws Unchecked {
+		char[] ret = new char[_Size];
+		getChars(_Base, ret);
+		return ret;
+	}
+
+	default int[] getInts(long _Base, int _Size) throws Unchecked {
+		int[] ret = new int[_Size];
+		getInts(_Base, ret);
+		return ret;
+	}
+
+	default float[] getFloats(long _Base, int _Size) throws Unchecked {
+		float[] ret = new float[_Size];
+		getFloats(_Base, ret);
+		return ret;
+	}
+
+	default long[] getLongs(long _Base, int _Size) throws Unchecked {
+		long[] ret = new long[_Size];
+		getLongs(_Base, ret);
+		return ret;
+	}
+
+	default double[] getDoubles(long _Base, int _Size) throws Unchecked {
+		double[] ret = new double[_Size];
+		getDoubles(_Base, ret);
+		return ret;
+	}
+
+
+	default long allocRWX(long size) throws Unchecked, RWXAllocationNotSupoortedException {
+		try {
+			return AccessorJniDirect.allocRWX0(size);
+		} catch (Throwable e) {
+			throw new RWXAllocationNotSupoortedException(e);
+		}
 	}
 }

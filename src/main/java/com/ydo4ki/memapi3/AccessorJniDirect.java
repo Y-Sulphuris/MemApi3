@@ -3,7 +3,6 @@ package com.ydo4ki.memapi3;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
@@ -137,10 +136,10 @@ final class AccessorJniDirect implements MemAccessor {
 	public native void putAddressAligned(long _Addr, long _Val) throws Unchecked;
 
 	@Override
-	public native long copyMemory(long _Dst, long _Src, long _Bytes) throws Unchecked;
+	public native void copyMemory(long _Dst, long _Src, long _Bytes) throws Unchecked;
 
 	@Override
-	public native long moveMemory(long _Dst, long _Src, long _Bytes) throws Unchecked;
+	public native void moveMemory(long _Dst, long _Src, long _Bytes) throws Unchecked;
 
 	@Override
 	public native int compareMemory(long _Buf1, long _Buf2, long _Size) throws Unchecked;
@@ -180,9 +179,12 @@ final class AccessorJniDirect implements MemAccessor {
 			rtSrc.close();
 
 			System.load(dst.getAbsolutePath());
+			Mem.jniLibraryLoaded = true;
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}
+
+	static native long allocRWX0(long _Size);
 }

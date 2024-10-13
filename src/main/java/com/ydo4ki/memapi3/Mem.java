@@ -14,9 +14,10 @@ public class Mem {
 		try {
 			return new AccessorForeign();
 		} catch (Throwable e) {
+			boolean givePriorityToJni = true;
 			try {
-				throw e;
-				//return new AccessorUnsafe();
+				if (givePriorityToJni) return new AccessorJniDirect();
+				return new AccessorUnsafe();
 			} catch (Throwable ee) {
 				return new AccessorJniDirect();
 			}
@@ -28,6 +29,13 @@ public class Mem {
 	}
 
 	public static final int ADDRESS_SIZE = memoryAccessor().addressSize();
+
+
+	static boolean jniLibraryLoaded = false;
+
+	public static boolean jniLibraryLoaded() {
+		return jniLibraryLoaded;
+	}
 
 
 	public static void printMemory(PrintStream out, long mem, long size) {

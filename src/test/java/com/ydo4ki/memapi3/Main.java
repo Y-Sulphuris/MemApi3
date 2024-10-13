@@ -21,6 +21,8 @@ public class Main {
 		MemAccessor accessor = Mem.memoryAccessor();
 		long mem = accessor.allocateMemory(0x20, 0x10);
 
+
+
 		accessor.putBytes(mem+4, 'h', 'e', 5, 'l');
 		accessor.copyMemory(mem, mem+4, 8);
 		System.out.println(mem);
@@ -47,6 +49,24 @@ public class Main {
 			bh.consume(accessor.getLong(memory));
 		} catch (Unchecked e) {
 			throw e.noreturn();
+		}
+	}
+	/*@Benchmark
+	public void measureAccessorGetLongUnsafeMH(Blackhole bh) {
+		try {
+			bh.consume((long)AccessorUnsafe.getLong.invokeExact(memory));
+		} catch (Unchecked e) {
+			throw e.noreturn();
+		} catch (Throwable e) {
+			throw Unchecked.pass(e);
+		}
+	}*/
+	@Benchmark
+	public void measureAccessorGetLongUnsafeDirectly(Blackhole bh) {
+		try {
+			bh.consume((long)AccessorUnsafe.unsafe.getLong(memory));
+		} catch (Throwable e) {
+			throw Unchecked.pass(e);
 		}
 	}
 }

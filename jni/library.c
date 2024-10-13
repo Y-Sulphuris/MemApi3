@@ -2,7 +2,7 @@
 #include <string.h>
 #include <malloc.h>
 #include "com_ydo4ki_memapi3_AccessorJniDirect.h"
-
+#include "JNIDirect.h"
 
 
 JNIEXPORT jbyte JNICALL Java_com_ydo4ki_memapi3_AccessorJniDirect_getByte

@@ -1,5 +1,5 @@
 package com.ydo4ki.memapi3;
-/*
+
 import sun.misc.Unsafe;
 
 import java.lang.invoke.MethodHandle;
@@ -7,13 +7,16 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.function.IntSupplier;
 
 /**
  * @author Sulphuris
  * @since 11.10.2024 12:50
- *
+ */
 final class AccessorUnsafe implements MemAccessor {
-	private static final Unsafe unsafe = getUnsafe();
+	static final Unsafe unsafe = getUnsafe();
 
 	private static Unsafe getUnsafe() {
 		try {
@@ -56,10 +59,18 @@ final class AccessorUnsafe implements MemAccessor {
 
 	private static final MethodHandle addressSize = findSunUnsafeMethod("addressSize", int.class);
 
+	private static MethodHandle findSunUnsafeMethodOrNull(String methodName, Class<?> returnType, Class<?>... args) {
+		try {
+			return findMethod(methodName, unsafe, returnType, args);
+		} catch (Throwable e) {
+			return null;
+		}
+	}
 	private static MethodHandle findSunUnsafeMethod(String methodName, Class<?> returnType, Class<?>... args) {
 		try {
 			return findMethod(methodName, unsafe, returnType, args);
 		} catch (Throwable e) {
+			e.printStackTrace();
 			return findMethodTrusted(methodName, fallback, returnType, args);
 		}
 	}
@@ -71,6 +82,7 @@ final class AccessorUnsafe implements MemAccessor {
 			throw Unchecked.pass(e);
 		}
 	}
+
 	private static MethodHandle findMethod(String methodName, Object target, Class<?> returnType, Class<?>... args) throws Throwable {
 		return lookup.bind(target, methodName, MethodType.methodType(returnType, args));
 	}
@@ -276,18 +288,17 @@ final class AccessorUnsafe implements MemAccessor {
 	}
 
 	@Override
-	public long copyMemory(long _Dst, long _Src, long _Bytes) throws Unchecked {
+	public void copyMemory(long _Dst, long _Src, long _Bytes) throws Unchecked {
 		try {
 			copyMemory.invokeExact(_Dst, _Src, _Bytes);
 		} catch (Throwable e) {
 			throw Unchecked.pass(e);
 		}
-		return _Dst;
 	}
 
 	@Override
-	public long moveMemory(long _Dst, long _Src, long _Bytes) throws Unchecked {
-		return fallback.moveMemory(_Dst, _Src, _Bytes);
+	public void moveMemory(long _Dst, long _Src, long _Bytes) throws Unchecked {
+		fallback.moveMemory(_Dst, _Src, _Bytes);
 	}
 
 	@Override
@@ -317,5 +328,186 @@ final class AccessorUnsafe implements MemAccessor {
 	public long allocateMemory(long _Size, long _Alignment) throws Unchecked, IllegalArgumentException {
 		return fallback.allocateMemory(_Size, _Alignment);
 	}
+
+	// These methods intended to be implemented using MethodHandles, but there
+	// is inconsistency in my mind
+	private static final int BYTE_ARRAY_BASE = optionalInt(() -> Unsafe.ARRAY_BYTE_BASE_OFFSET);
+	private static final int BOOLEAN_ARRAY_BASE = optionalInt(() -> Unsafe.ARRAY_BOOLEAN_BASE_OFFSET);
+	private static final int SHORT_ARRAY_BASE = optionalInt(() -> Unsafe.ARRAY_SHORT_BASE_OFFSET);
+	private static final int CHAR_ARRAY_BASE = optionalInt(() -> Unsafe.ARRAY_CHAR_BASE_OFFSET);
+	private static final int INT_ARRAY_BASE = optionalInt(() -> Unsafe.ARRAY_INT_BASE_OFFSET);
+	private static final int FLOAT_ARRAY_BASE = optionalInt(() -> Unsafe.ARRAY_FLOAT_BASE_OFFSET);
+	private static final int LONG_ARRAY_BASE = optionalInt(() -> Unsafe.ARRAY_LONG_BASE_OFFSET);
+	private static final int DOUBLE_ARRAY_BASE = optionalInt(() -> Unsafe.ARRAY_DOUBLE_BASE_OFFSET);
+
+	private static int optionalInt(IntSupplier supplier) {
+		try {
+			return supplier.getAsInt();
+		} catch (Throwable e) {
+			return -1;
+		}
+	}
+
+	private static final MethodHandle copyMemoryRef = findSunUnsafeMethodOrNull("copyMemory", void.class, Object.class, long.class, Object.class, long.class, long.class);
+
+	@Override
+	public void putBytes(long _Base, byte[] _Bytes, int _From, int _To) throws Unchecked {
+		if (BYTE_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(_Bytes, _From + BYTE_ARRAY_BASE, null, _Base, _To - _From);
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.putBytes(_Base, _Bytes, _From, _To);
+	}
+
+	@Override
+	public void putBooleans(long _Base, boolean[] __Value, int _From, int _To) throws Unchecked {
+		if (BOOLEAN_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(__Value, _From + BOOLEAN_ARRAY_BASE, null, _Base, _To - _From);
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.putBooleans(_Base, __Value, _From, _To);
+	}
+
+	@Override
+	public void putShorts(long _Base, short[] __Value, int _From, int _To) throws Unchecked {
+		if (SHORT_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(__Value, _From + SHORT_ARRAY_BASE, null, _Base, (long) (_To - _From) << 1L);
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.putShorts(_Base, __Value, _From, _To);
+	}
+
+	@Override
+	public void putChars(long _Base, char[] __Value, int _From, int _To) throws Unchecked {
+		if (CHAR_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(__Value, _From + CHAR_ARRAY_BASE, null, _Base, (long) (_To - _From) << 1L);
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.putChars(_Base, __Value, _From, _To);
+	}
+
+	@Override
+	public void putInts(long _Base, int[] _Value, int _From, int _To) throws Unchecked {
+		if (INT_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(_Value, _From + INT_ARRAY_BASE, null, _Base, (long) (_To - _From) << 2L);
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.putInts(_Base, _Value, _From, _To);
+	}
+
+	@Override
+	public void putFloats(long _Base, float[] _Value, int _From, int _To) throws Unchecked {
+		if (FLOAT_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(_Value, _From + FLOAT_ARRAY_BASE, null, _Base, (long) (_To - _From) << 2L);
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.putFloats(_Base, _Value, _From, _To);
+	}
+
+	@Override
+	public void putLongs(long _Base, long[] _Value, int _From, int _To) throws Unchecked {
+		if (LONG_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(_Value, _From + LONG_ARRAY_BASE, null, _Base, (long) (_To - _From) << 3L);
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.putLongs(_Base, _Value, _From, _To);
+	}
+
+	@Override
+	public void putDoubles(long _Base, double[] _Value, int _From, int _To) throws Unchecked {
+		if (DOUBLE_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(_Value, _From + DOUBLE_ARRAY_BASE, null, _Base, (long) (_To - _From) << 3L);
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.putDoubles(_Base, _Value, _From, _To);
+	}
+
+	@Override
+	public void getBytes(long _Base, byte[] _Value, int _From, int _To) throws Unchecked {
+		if (BYTE_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(null, _Base, _Value, _From + BYTE_ARRAY_BASE, (long) (_To - _From));
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.getBytes(_Base, _Value, _From, _To);
+	}
+
+	@Override
+	public void getBooleans(long _Base, boolean[] _Value, int _From, int _To) throws Unchecked {
+		if (BOOLEAN_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(null, _Base, _Value, _From + BOOLEAN_ARRAY_BASE, (long) (_To - _From));
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.getBooleans(_Base, _Value, _From, _To);
+	}
+
+	@Override
+	public void getShorts(long _Base, short[] _Value, int _From, int _To) throws Unchecked {
+		if (SHORT_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(null, _Base, _Value, _From + SHORT_ARRAY_BASE, (long) (_To - _From) << 1L);
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.getShorts(_Base, _Value, _From, _To);
+	}
+
+	@Override
+	public void getChars(long _Base, char[] _Value, int _From, int _To) throws Unchecked {
+		if (CHAR_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(null, _Base, _Value, _From + CHAR_ARRAY_BASE, (long) (_To - _From) << 1L);
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.getChars(_Base, _Value, _From, _To);
+	}
+
+	@Override
+	public void getFloats(long _Base, float[] _Value, int _From, int _To) throws Unchecked {
+		if (FLOAT_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(null, _Base, _Value, _From + FLOAT_ARRAY_BASE, (long) (_To - _From) << 2L);
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.getFloats(_Base, _Value, _From, _To);
+	}
+
+	@Override
+	public void getInts(long _Base, int[] _Value, int _From, int _To) throws Unchecked {
+		if (INT_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(null, _Base, _Value, _From + INT_ARRAY_BASE, (long) (_To - _From) << 2L);
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.getInts(_Base, _Value, _From, _To);
+	}
+
+	@Override
+	public void getLongs(long _Base, long[] _Value, int _From, int _To) throws Unchecked {
+		if (LONG_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(null, _Base, _Value, _From + LONG_ARRAY_BASE, (long) (_To - _From) << 3L);
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.getLongs(_Base, _Value, _From, _To);
+	}
+
+	@Override
+	public void getDoubles(long _Base, double[] _Value, int _From, int _To) throws Unchecked {
+		if (DOUBLE_ARRAY_BASE != -1 && copyMemoryRef != null) try {
+			copyMemoryRef.invoke(null, _Base, _Value, _From + DOUBLE_ARRAY_BASE, (long) (_To - _From) << 3L);
+			return;
+		} catch (Throwable ignored) {
+		}
+		MemAccessor.super.getDoubles(_Base, _Value, _From, _To);
+	}
 }
-*/
+// */
