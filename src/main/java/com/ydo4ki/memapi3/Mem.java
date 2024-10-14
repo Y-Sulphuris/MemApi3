@@ -7,17 +7,14 @@ import java.io.PrintStream;
  * @since 11.10.2024 12:49
  */
 public class Mem {
-	private static final MemAccessor accessor = getAccessor();
+	static final MemAccessor accessor = getAccessor();
 
 	/**
-	 * Selects the best memory accessor implementation available.
-	 * <p>
+	 * Selects the best memory accessor implementation available.<p>
 	 * Current selection order:
 	 * 1. {@link AccessorForeign} (JNI wrapper for foreign library)
 	 * 2. {@link AccessorJniDirect} (direct JNI calls)
 	 * 3. {@link AccessorUnsafe} (Java {@link sun.misc.Unsafe})
-	 * <p>
-	 *
 	 * @return the best memory accessor implementation available
 	 */
 	private static MemAccessor getAccessor() {

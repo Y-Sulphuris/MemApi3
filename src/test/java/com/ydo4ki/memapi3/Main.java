@@ -20,9 +20,7 @@ public class Main {
 	public static void main(String[] args) throws Throwable {
 		MemAccessor accessor = Mem.memoryAccessor();
 		long mem = accessor.allocateMemory(0x20, 0x10);
-
-
-
+		
 		accessor.putBytes(mem+4, 'h', 'e', 5, 'l');
 		accessor.copyMemory(mem, mem+4, 8);
 		System.out.println(mem);
@@ -41,7 +39,7 @@ public class Main {
 
 
 	// foreign: 0,874 ± 0,437  ns/op
-	// unsafe:  3,808 ± 0,904  ns/op ????? (something wrong with it)
+	// unsafe:  2,808 ± 0,904  ns/op
 	// jni:     8,995 ± 0,573  ns/op
 	@Benchmark
 	public void measureAccessorGetLong(Blackhole bh) {

@@ -2,7 +2,7 @@ package com.ydo4ki.memapi3;
 
 /**
  * Checked exception to explicitly indicate that called operation is unsafe<br>
- * Creation of real objects of this class is forbidden<br>
+ * Creation of real instances of this class is forbidden<br>
  * Example of usage:
  * <pre> {@code
  * long myTrustedGetter() {
@@ -32,11 +32,25 @@ public abstract class Unchecked extends Throwable {
 		throw (T)e;
 	}
 
+	/**
+	 * A functional interface that can throw {@link Unchecked}.<br>
+	 * This interface is useful for wrapping code that may throw {@link Unchecked} into a lambda expression
+	 * @see java.util.function.Supplier
+	 */
 	@FunctionalInterface
 	public interface UncheckedSupplier<T> {
+		/**
+		 * Gets a result.
+		 *
+		 * @return a result
+		 * @throws Unchecked indicates that called operation is unsafe
+		 */
 		T get() throws Unchecked;
 	}
-
-
+	
+	
+	/**
+	 * @return nothing
+	 */
 	public abstract Error noreturn();
 }

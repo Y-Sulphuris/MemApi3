@@ -59,6 +59,16 @@ final class AccessorUnsafe implements MemAccessor {
 
 	private static final MethodHandle addressSize = findSunUnsafeMethod("addressSize", int.class);
 
+	/**
+	 * Tries to find the specified method in the {@link sun.misc.Unsafe} class and returns a {@link MethodHandle} to it.
+	 * <p>
+	 * If the method does not exist, returns {@code null}.
+	 *
+	 * @param methodName the name of the method to find
+	 * @param returnType the return type of the method
+	 * @param args the parameter types of the method
+	 * @return a {@link MethodHandle} to the method, or {@code null} if the method does not exist
+	 */
 	private static MethodHandle findSunUnsafeMethodOrNull(String methodName, Class<?> returnType, Class<?>... args) {
 		try {
 			return findMethod(methodName, unsafe, returnType, args);
