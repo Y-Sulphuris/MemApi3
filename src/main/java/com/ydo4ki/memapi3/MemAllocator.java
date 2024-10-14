@@ -11,4 +11,9 @@ public interface MemAllocator {
 	}
 
 	long allocateMemory(long _Size, long _Alignment) throws Unchecked, IllegalArgumentException;
+
+
+	default long allocRWX(long size) throws Unchecked, RWXAllocationNotSupoortedException {
+		throw new RWXAllocationNotSupoortedException();
+	}
 }

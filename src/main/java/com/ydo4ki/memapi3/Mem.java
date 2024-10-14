@@ -7,14 +7,24 @@ import java.io.PrintStream;
  * @since 11.10.2024 12:49
  */
 public class Mem {
-
 	private static final MemAccessor accessor = getAccessor();
 
+	/**
+	 * Selects the best memory accessor implementation available.
+	 * <p>
+	 * Current selection order:
+	 * 1. {@link AccessorForeign} (JNI wrapper for foreign library)
+	 * 2. {@link AccessorJniDirect} (direct JNI calls)
+	 * 3. {@link AccessorUnsafe} (Java {@link sun.misc.Unsafe})
+	 * <p>
+	 *
+	 * @return the best memory accessor implementation available
+	 */
 	private static MemAccessor getAccessor() {
 		try {
 			return new AccessorForeign();
 		} catch (Throwable e) {
-			boolean givePriorityToJni = true;
+			boolean givePriorityToJni = false;
 			try {
 				if (givePriorityToJni) return new AccessorJniDirect();
 				return new AccessorUnsafe();
@@ -42,6 +52,36 @@ public class Mem {
 		printMemory(out, mem, size, 4, 4);
 	}
 
+	/**
+	 * Prints the memory region at the given address and of the given size
+	 * to the given {@link PrintStream}.
+	 * <p>
+	 * The memory region is printed in a tabular format with the following
+	 * information:
+	 * <ul>
+	 * <li>address</li>
+	 * <li>contents</li>
+	 * </ul>
+	 * The address is printed in the format <code>[00000000] (+0000)</code>
+	 * where <code>00000000</code> is the absolute address and <code>+0000</code>
+	 * is the offset from the given address.
+	 * <p>
+	 * The contents are printed in hexadecimal format with 2 digits for
+	 * each byte.
+	 * <p>
+	 * The table is divided into columns of the given size, with a space
+	 * separating each column.
+	 * <p>
+	 * If the given size is not a multiple of the column size, the remaining
+	 * bytes are not printed.
+	 * <p>
+	 *
+	 * @param out the {@link PrintStream} to print to
+	 * @param mem the starting address of the memory region
+	 * @param size the size of the memory region
+	 * @param colSize the size of each column
+	 * @param colCount the number of columns
+	 */
 	public static void printMemory(PrintStream out, long mem, long size, int colSize, int colCount) {
 		for (int i = 0; i < size; i++) try {
 			final long addr = i + mem;
@@ -56,14 +96,54 @@ public class Mem {
 		out.println();
 	}
 
+	/**
+	 * Prints the given memory region to the given {@link PrintStream}.
+	 * <p>
+	 * This is a convenience method for {@link #printMemory(PrintStream, long, long, int, int, boolean)}.
+	 * <p>
+	 *
+	 * @param out the {@link PrintStream} to print to
+	 * @param mem the starting address of the memory region
+	 * @param size the size of the memory region
+	 * @param ascii whether to print the contents in ASCII format
+	 */
 	public static void printMemory(PrintStream out, long mem, long size, boolean ascii) {
 		printMemory(out, mem, size, 4, 4, ascii);
 	}
 
+	/**
+	 * Prints the given memory region to the given {@link PrintStream}.
+	 * <p>
+	 * This is a convenience method for {@link #printMemory(PrintStream, long, long, int, int, int, boolean)}.
+	 * <p>
+	 *
+	 * @param out   the {@link PrintStream} to print to
+	 * @param mem   the starting address of the memory region
+	 * @param size  the size of the memory region
+	 * @param colSize the size of each column
+	 * @param colCount the number of columns
+	 * @param ascii whether to print the contents in ASCII format
+	 */
 	public static void printMemory(PrintStream out, long mem, long size, int colSize, int colCount, boolean ascii) {
 		printMemory(out, mem, size, colSize, colCount, 0, ascii);
 	}
 
+	/**
+	 * Prints the given memory region to the given {@link PrintStream}.
+	 * <p>
+	 * The memory region is divided into columns of the given size, and rows
+	 * of the given count. The starting address of the memory region is offset
+	 * by the given offset. If the given size is not a multiple of the size of
+	 * the columns and rows, the memory region is padded with zeros.
+	 * <p>
+	 *
+	 * @param out       the {@link PrintStream} to print to
+	 * @param mem       the starting address of the memory region
+	 * @param size      the size of the memory region
+	 * @param colSize   the size of each column
+	 * @param colCount  the number of columns
+	 * @param ascii     whether to print the contents in ASCII format
+	 */
 	public static void printMemory(PrintStream out, long mem, long size, int colSize, int colCount, int offset, final boolean ascii) {
 		StringBuilder asciiBuilder = new StringBuilder(colSize * colCount);
 		offset = (int) align(offset, (long) colSize * colCount);

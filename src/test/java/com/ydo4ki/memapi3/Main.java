@@ -41,7 +41,7 @@ public class Main {
 
 
 	// foreign: 0,874 ± 0,437  ns/op
-	// unsafe:  0,353 ± 0,099  ns/op ????? (something wrong with it)
+	// unsafe:  3,808 ± 0,904  ns/op ????? (something wrong with it)
 	// jni:     8,995 ± 0,573  ns/op
 	@Benchmark
 	public void measureAccessorGetLong(Blackhole bh) {

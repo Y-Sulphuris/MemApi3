@@ -1,13 +1,29 @@
 package com.ydo4ki.memapi3;
 
 /**
+ * Interface for accessing native memory.<br>
+ * This interface is used to access native memory from java.<br>
+ * All methods marked {@link Unchecked} if operation is unsafe.<br>
+ * All methods are final and can be inlined by jit.
  * @author Sulphuris
  * @since 11.10.2024 12:57
  */
 public interface MemAccessor extends MemAllocatorManual {
 
+	/**
+	 * Returns boolean value from memory address.<br>
+	 * @param _Addr native memory address
+	 * @return boolean value from memory address
+	 * @throws Unchecked This operation is unsafe
+	 */
 	boolean getBoolean(long _Addr) throws Unchecked;
 
+	/**
+	 * Same as {@link #getBoolean(long)}, but required aligned memory address.
+	 * @param _Addr native memory address
+	 * @return boolean value from memory address
+	 * @throws Unchecked this operation is unsafe
+	 */
 	default boolean getBooleanAligned(long _Addr) throws Unchecked {
 		return getBoolean(_Addr);
 	}

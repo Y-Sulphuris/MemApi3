@@ -6,7 +6,7 @@
 
     <groupId>com.ydo4ki.memapi3</groupId>
     <artifactId>MemApi3</artifactId>
-    <version>1.0</version>
+    <version>1.0-PRE-RELEASE-1</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
